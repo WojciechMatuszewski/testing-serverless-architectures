@@ -33,3 +33,7 @@ Going through the course and writing what I've learned along the way.
   - That is because the **unit tests do not give you a lot of return on investment in serverless architectures**.
 
     - Of course, having the unit tests for the service edge cases and domain logic is a must, but other than that, it should be integration tests all the way down (with a few e2e tests here and there).
+
+- **For authentication, use the _admin_ version of the Cognito SDK**.
+
+  - It allows you to create and confirm users. Very handy when writing tests.
