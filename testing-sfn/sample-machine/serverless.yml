@@ -1,0 +1,49 @@
+service: tsa-chp04ln04
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-step-functions
+  - serverless-export-outputs
+
+provider:
+  name: aws
+  runtime: provided.al2
+  architecture: arm64
+
+package:
+  individually: true
+  exclude:
+    - .step-functions-local/**
+    - target/**
+    - src/**
+
+custom:
+  exportOutputs:
+    include:
+      - AwsRegion
+      - StateMachineArn
+    output:
+      file: ./.env-outputs
+
+functions:
+  get-html:
+    handler: bootstrap
+    package:
+      artifact: bin/html-getter/bootstrap.zip
+
+stepFunctions:
+  stateMachines:
+    SimpleExample: ${file(state_machines/simple.yml)}
+
+resources:
+  Outputs:
+    AwsRegion:
+      Value: ${aws:region}
+
+    StateMachineArn:
+      Value: !Ref SimpleExampleStateMachine
+
+    GetHTMLFunctionName:
+      # Serverless framework changes the name of the AWS Lambda resource.
+      Value: !Ref GetDashhtmlLambdaFunction

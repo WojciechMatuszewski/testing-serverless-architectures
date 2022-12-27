@@ -1,5 +1,7 @@
 .env
 node_modules
-.env-ouputs
+.env-outputs
 .DS_Store
 .serverless
+target
+bin
