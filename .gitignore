@@ -5,3 +5,4 @@ node_modules
 .serverless
 target
 bin
+.step-functions-local

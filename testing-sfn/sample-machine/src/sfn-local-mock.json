@@ -1,0 +1,41 @@
+{
+  "StateMachines": {
+    "SimpleExample": {
+      "TestCases": {
+        "GetHtmlError": {
+          "GetHtml": "MockedLambdaError"
+        },
+        "IsBigPath": {
+          "GetHtml": "MockedIsHtmlBigTrue"
+        },
+        "IsNotBigPath": {
+          "GetHtml": "MockedIsHtmlBigFalse"
+        }
+      }
+    }
+  },
+  "MockedResponses": {
+    "MockedLambdaError": {
+      "0": {
+        "Throw": {
+          "Error": "Lambda.ResourceNotReadyException",
+          "Cause": "Lambda is not ready"
+        }
+      }
+    },
+    "MockedIsHtmlBigTrue": {
+      "0": {
+        "Return": {
+          "size": 1024000
+        }
+      }
+    },
+    "MockedIsHtmlBigFalse": {
+      "0": {
+        "Return": {
+          "size": 1024
+        }
+      }
+    }
+  }
+}

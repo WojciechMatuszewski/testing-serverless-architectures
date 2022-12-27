@@ -10,6 +10,7 @@ provider:
   name: aws
   runtime: provided.al2
   architecture: arm64
+  region: eu-west-1
 
 package:
   individually: true

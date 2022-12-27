@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "downloadSfnLocal": "./install-sfn-local.sh",
-    "startSfnLocal": "cross-env SFN_MOCK_CONFIG=./__tests__/sfn-local-mock.json java -jar .step-functions-local/StepFunctionsLocal.jar",
+    "startSfnLocal": "cross-env SFN_MOCK_CONFIG=./src/sfn-local-mock.json java -jar .step-functions-local/StepFunctionsLocal.jar",
     "deploy": "make build && sls deploy",
     "test:local": "jest __tests__/test_cases/local",
     "test:e2e": "jest __tests__/test_cases/e2e"
