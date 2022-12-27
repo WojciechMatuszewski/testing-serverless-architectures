@@ -8,7 +8,7 @@
 
     - The most notable one is **the inability to parse the `context.prev` object in the context of pipeline resolvers**. They did not implement that one yet.
 
-      - In such situations, **you have to fall-back to using the `amplify` libraries from the _amplify simulator_**.
+      - In such situations, **you have to fall back to using the `amplify` libraries from the _amplify simulator_**.
 
         - Keep in mind that these libraries are only available in JavaScript. Such a pity.
 
