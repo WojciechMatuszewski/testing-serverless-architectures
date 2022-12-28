@@ -1,0 +1,168 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  complex-state-machine-test
+  Sample SAM Template for complex-state-machine-test
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+    Tracing: Active
+    Runtime: provided.al2
+    Architectures:
+      - arm64
+  Api:
+    TracingEnabled: True
+
+Resources:
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: OrdersTable
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  OrdersTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: OrdersTopic
+
+  OrderedOrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 1
+      MessageRetentionPeriod: 300
+      ReceiveMessageWaitTimeSeconds: 1
+
+  OrderedOrdersSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Sub ${OrderedOrdersQueue.Arn}
+      Protocol: sqs
+      TopicArn: !Sub ${OrdersTopic.TopicArn}
+      FilterPolicy:
+        currentStatus:
+          - ORDERED
+
+  RejectedOrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 1
+      MessageRetentionPeriod: 300
+      ReceiveMessageWaitTimeSeconds: 1
+
+  RejectedOrdersSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Sub ${RejectedOrdersQueue.Arn}
+      Protocol: sqs
+      TopicArn: !Sub ${OrdersTopic.TopicArn}
+      FilterPolicy:
+        currentStatus:
+          - REJECTED
+
+  AcceptedOrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 1
+      MessageRetentionPeriod: 300
+      ReceiveMessageWaitTimeSeconds: 1
+
+  AcceptedOrdersSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Sub ${AcceptedOrdersQueue.Arn}
+      Protocol: sqs
+      TopicArn: !Sub ${OrdersTopic.TopicArn}
+      FilterPolicy:
+        currentStatus:
+          - ACCEPTED
+
+  OrdersQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Sub ${OrderedOrdersQueue}
+        - !Sub ${RejectedOrdersQueue}
+        - !Sub ${AcceptedOrdersQueue}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: SQS:SendMessage
+            Resource: !Sub ${OrderedOrdersQueue.Arn}
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub ${OrdersTopic.TopicArn}
+          - Effect: Allow
+            Principal: "*"
+            Action: SQS:SendMessage
+            Resource: !Sub ${RejectedOrdersQueue.Arn}
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub ${OrdersTopic.TopicArn}
+          - Effect: Allow
+            Principal: "*"
+            Action: SQS:SendMessage
+            Resource: !Sub ${AcceptedOrdersQueue.Arn}
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub ${OrdersTopic.TopicArn}
+
+  OrdersMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBCrudPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt OrdersTable.Arn
+        - PolicyName: SNSPublishPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Sub ${OrdersTopic.TopicArn}
+
+  OrdersStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: ./state-machine-definition.asl.json
+      DefinitionSubstitutions:
+        OrdersTable: !Sub ${OrdersTable}
+        OrdersTopic: !Sub ${OrdersTopic}
+      Role: !Sub ${OrdersMachineRole.Arn}
+# Outputs:
+#   HelloWorldAPI:
+#     Description: "API Gateway endpoint URL for Prod environment for First Function"
+#     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+#   HelloWorldFunction:
+#     Description: "First Lambda Function ARN"
+#     Value: !GetAtt HelloWorldFunction.Arn
+#   HelloWorldFunctionIamRole:
+#     Description: "Implicit IAM Role created for Hello World function"
+#     Value: !GetAtt HelloWorldFunctionRole.Arn

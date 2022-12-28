@@ -35,3 +35,13 @@
 - For **testing 3rd party APIs**, instead of using the step functions local, **consider creating mock endpoints to force the response you want**.
 
   - In the lecture, Yan uses `ngrok` to create a local public endpoint. If you run the tests locally, you **also could get away with using `msw` in some cases**.
+
+- I could not find a way to use the `waitForTaskToken` with a non-SDK call state transition.
+
+  - IMO, it would be neat if one could use a `Pass` state to do so, but maybe it is not necessary?
+
+    - Maybe trying to do so is a sign of a bad design?
+
+- And, of course, I forgot about the `AWS::SQS::QueuePolicy` resource.
+
+  - It took me longer than I would like to figure out the resource was missing.

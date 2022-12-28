@@ -1,0 +1,182 @@
+{
+  "StartAt": "Add order",
+  "States": {
+    "Add order": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "${OrdersTable}",
+        "Item": {
+          "orderId": {
+            "S.$": "$.orderId"
+          },
+          "Status": {
+            "S": "ORDERED"
+          }
+        }
+      },
+      "ResultPath": null,
+      "Next": "Notify restaurant about the new order"
+    },
+    "Notify restaurant about the new order": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish.waitForTaskToken",
+      "Parameters": {
+        "TopicArn": "${OrdersTopic}",
+        "Message": {
+          "orderId.$": "$.orderId",
+          "taskToken.$": "$$.Task.Token"
+        },
+        "MessageAttributes": {
+          "currentStatus": {
+            "DataType": "String",
+            "StringValue": "ORDERED"
+          }
+        }
+      },
+      "TimeoutSeconds": 300,
+      "Catch": [
+        {
+          "ErrorEquals": ["States.Timeout"],
+          "Next": "Set order status to NO_RESPONSE",
+          "ResultPath": null
+        }
+      ],
+      "Next": "Is order accepted?"
+    },
+    "Is order accepted?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.accepted",
+          "BooleanEquals": true,
+          "Next": "Handle accepted order"
+        }
+      ],
+      "Default": "Set order status to REJECTED"
+    },
+    "Handle accepted order": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "Set order status to ACCEPTED",
+          "States": {
+            "Set order status to ACCEPTED": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:dynamodb:updateItem",
+              "Parameters": {
+                "TableName": "${OrdersTable}",
+                "Key": {
+                  "orderId": {
+                    "S.$": "$.orderId"
+                  }
+                },
+                "UpdateExpression": "SET #status = :status",
+                "ExpressionAttributeNames": {
+                  "#status": "status"
+                },
+                "ExpressionAttributeValues": {
+                  ":status": {
+                    "S": "ACCEPTED"
+                  }
+                }
+              },
+              "TimeoutSeconds": 300,
+              "ResultPath": null,
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Notify the user about the accepted order",
+          "States": {
+            "Notify the user about the accepted order": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish.waitForTaskToken",
+              "Parameters": {
+                "TopicArn": "${OrdersTopic}",
+                "Message": {
+                  "orderId.$": "$.orderId",
+                  "taskToken.$": "$$.Task.Token"
+                },
+                "MessageAttributes": {
+                  "currentStatus": {
+                    "DataType": "String",
+                    "StringValue": "ACCEPTED"
+                  }
+                }
+              },
+              "ResultPath": null,
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Set order status to REJECTED": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "${OrdersTable}",
+        "Key": {
+          "orderId": {
+            "S.$": "$.orderId"
+          }
+        },
+        "UpdateExpression": "SET #status = :status",
+        "ExpressionAttributeNames": {
+          "#status": "status"
+        },
+        "ExpressionAttributeValues": {
+          ":status": {
+            "S": "REJECTED"
+          }
+        }
+      },
+      "ResultPath": null,
+      "Next": "Notify the user about the cancelled order"
+    },
+    "Set order status to NO_RESPONSE": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "${OrdersTable}",
+        "Key": {
+          "orderId": {
+            "S.$": "$.orderId"
+          }
+        },
+        "UpdateExpression": "SET #status = :status",
+        "ExpressionAttributeNames": {
+          "#status": "status"
+        },
+        "ExpressionAttributeValues": {
+          ":status": {
+            "S": "NO_RESPONSE"
+          }
+        }
+      },
+      "ResultPath": null,
+      "Next": "Notify the user about the cancelled order"
+    },
+    "Notify the user about the cancelled order": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${OrdersTopic}",
+        "Message": {
+          "orderId.$": "$.orderId"
+        },
+        "MessageAttributes": {
+          "currentStatus": {
+            "DataType": "String",
+            "StringValue": "CANCELLED"
+          }
+        }
+      },
+      "ResultPath": null,
+      "End": true
+    }
+  }
+}

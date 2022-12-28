@@ -6,3 +6,5 @@ node_modules
 target
 bin
 .step-functions-local
+.aws-sam
+samconfig.toml
