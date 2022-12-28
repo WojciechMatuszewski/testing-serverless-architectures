@@ -19,3 +19,19 @@
     - It does not simulate IAM.
     - Not all services can be mocked.
     - It is pretty brittle.
+
+- For **more complex workflows, you will most likely need to deploy a "test-only" infrastructure, like SQS**.
+
+  - How else could you control the _waitForCallback_ flow? You need to deploy some resources to read the token from.
+
+    - Okay, you might get away with not deploying any resource if you save the tokens in DDB, but you will still need to read from it.
+
+  - Implementing custom SQS pollers is a bit of a pain, but I do not see any other way to test the SNS -> _waitForCallback_ pattern than to use SQS. Yan is using the same technique.
+
+- When **testing timeouts, Yan decided to re-write the SFN definition when providing it to the step functions local**.
+
+  - Interesting technique. It smells, but I do not have a better solution either.
+
+- For **testing 3rd party APIs**, instead of using the step functions local, **consider creating mock endpoints to force the response you want**.
+
+  - In the lecture, Yan uses `ngrok` to create a local public endpoint. If you run the tests locally, you **also could get away with using `msw` in some cases**.
