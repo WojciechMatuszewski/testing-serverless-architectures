@@ -166,3 +166,5 @@ Outputs:
     Value: !Sub ${RejectedOrdersQueue}
   OrdersMachineArn:
     Value: !Sub ${OrdersStateMachine}
+  OrdersTableName:
+    Value: !Sub ${OrdersTable}

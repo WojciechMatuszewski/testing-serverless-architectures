@@ -135,7 +135,7 @@
         }
       },
       "ResultPath": null,
-      "Next": "Notify the user about the cancelled order"
+      "Next": "Notify the user about the rejected order"
     },
     "Set order status to NO_RESPONSE": {
       "Type": "Task",
@@ -158,9 +158,9 @@
         }
       },
       "ResultPath": null,
-      "Next": "Notify the user about the cancelled order"
+      "Next": "Notify the user about the rejected order"
     },
-    "Notify the user about the cancelled order": {
+    "Notify the user about the rejected order": {
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
@@ -171,7 +171,7 @@
         "MessageAttributes": {
           "currentStatus": {
             "DataType": "String",
-            "StringValue": "CANCELLED"
+            "StringValue": "REJECTED"
           }
         }
       },
