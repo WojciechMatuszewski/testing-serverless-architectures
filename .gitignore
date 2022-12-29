@@ -8,3 +8,4 @@ bin
 .step-functions-local
 .aws-sam
 samconfig.toml
+.outputs.env
