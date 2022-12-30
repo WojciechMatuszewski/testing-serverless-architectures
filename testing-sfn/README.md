@@ -45,3 +45,7 @@
 - And, of course, I forgot about the `AWS::SQS::QueuePolicy` resource.
 
   - It took me longer than I would like to figure out the resource was missing.
+
+- I must admit that **testing the complex step functions flows is somewhat involved**.
+
+  - Having said that, imagine the confidence you gain by doing so. Completely worth it, in my opinion.
