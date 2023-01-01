@@ -1,0 +1,90 @@
+service: tsa-chp05ln03
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-appsync-plugin
+  - serverless-iam-roles-per-function
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-1
+
+functions:
+  publish:
+    handler: functions/publish.handler
+    events:
+      - http:
+          path: /{accountId}/{target}
+          method: post
+    environment:
+      API_URL: !GetAtt GraphQlApi.GraphQLUrl
+    iamRoleStatements:
+      - Effect: Allow
+        Action: appsync:GraphQL
+        Resource: !Sub "${GraphQlApi}/*"
+
+custom:
+  appSync:
+    name: tsa-chp05ln03
+    schema: schema.graphql
+    authenticationType: API_KEY
+    mappingTemplatesLocation: mapping-templates
+    mappingTemplates:
+      - type: Query
+        field: listEvents
+        dataSource: eventsTable
+      - type: Mutation
+        field: publish
+        dataSource: eventsTable
+    dataSources:
+      - type: AMAZON_DYNAMODB
+        name: eventsTable
+        config:
+          tableName: !Ref EventsTable
+
+resources:
+  Resources:
+    EventsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: accountId
+            KeyType: HASH
+          - AttributeName: eventId
+            KeyType: RANGE
+        AttributeDefinitions:
+          - AttributeName: accountId
+            AttributeType: S
+          - AttributeName: eventId
+            AttributeType: S
+
+    RestApiUrlParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Type: String
+        Name: "/eventcatcher/dev/rest-api-url"
+        Value: !Sub ${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com/${sls:stage}
+
+    RestApiArnParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Type: String
+        Name: "/eventcatcher/dev/rest-api-arn"
+        Value: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/${sls:stage}
+
+    AppSyncApiUrlParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Type: String
+        Name: "/eventcatcher/dev/graphql-api-url"
+        Value: !GetAtt GraphQlApi.GraphQLUrl
+
+    AppSyncApiArnParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Type: String
+        Name: "/eventcatcher/dev/graphql-api-arn"
+        Value: !Ref GraphQlApi

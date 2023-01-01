@@ -1,0 +1,16 @@
+{
+  "version" : "2018-05-29",
+  "operation" : "PutItem",
+  "key": {
+    "accountId": $util.dynamodb.toDynamoDBJson($context.arguments.event.accountId),
+    "eventId": $util.dynamodb.toDynamoDBJson($context.arguments.event.eventId)
+  },
+  "attributeValues": {
+    "target": $util.dynamodb.toDynamoDBJson($context.arguments.event.target),
+    "payload": $util.dynamodb.toDynamoDBJson($context.arguments.event.payload),
+    "createdAt": $util.dynamodb.toDynamoDBJson($util.time.nowISO8601())
+  },
+  "condition" : {
+    "expression" : "attribute_not_exists(eventId)"
+  }
+}

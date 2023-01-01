@@ -1,0 +1,29 @@
+{
+  "name": "lesson-3-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "sls deploy"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.109",
+    "@types/jest": "^29.2.4",
+    "jest": "^29.3.1",
+    "serverless": "^3.25.1",
+    "serverless-appsync-plugin": "^1.14.0",
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "ws": "^8.11.0"
+  },
+  "dependencies": {
+    "aws-appsync": "^4.1.9",
+    "axios": "^1.2.1",
+    "graphql-tag": "^2.12.6",
+    "isomorphic-fetch": "^3.0.0",
+    "ulid": "^2.3.0",
+    "uuid": "^9.0.0"
+  }
+}

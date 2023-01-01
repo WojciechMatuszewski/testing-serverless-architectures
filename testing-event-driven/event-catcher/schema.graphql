@@ -1,0 +1,41 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Query {
+  listEvents(
+    accountId: ID!
+    limit: Int!
+    nextToken: String
+  ): EventsPage
+}
+
+type Mutation {
+  publish(event: EventInput!): Event!
+}
+
+type Subscription {
+  onNewEvent(accountId: ID!, target: String): Event
+  @aws_subscribe(mutations: ["publish"])
+}
+
+input EventInput {
+  accountId: ID!
+  eventId: ID!
+  target: String!
+  payload: AWSJSON!
+}
+
+type Event {
+  accountId: ID!
+  eventId: ID!
+  target: String!
+  payload: AWSJSON!
+}
+
+type EventsPage {
+  events: [Event!]
+  nextToken: String
+}

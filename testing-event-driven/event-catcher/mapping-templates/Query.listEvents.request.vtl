@@ -1,0 +1,15 @@
+{
+  "version" : "2018-05-29",
+  "operation" : "Query",
+  "query" : {
+    "expression" : "accountId = :accountId",
+    "expressionValues" : {
+      ":accountId" : $util.dynamodb.toDynamoDBJson($context.arguments.accountId)
+    }
+  },
+  "nextToken" : $util.toJson($context.arguments.nextToken),
+  "limit" : $util.toJson($context.arguments.limit),
+  "scanIndexForward" : false,
+  "consistentRead" : false,
+  "select" : "ALL_ATTRIBUTES"
+}
