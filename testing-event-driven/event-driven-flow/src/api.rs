@@ -13,11 +13,13 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn handler(
-    _event: LambdaEvent<aws_lambda_events::apigw::ApiGatewayProxyRequest>,
+    event: LambdaEvent<aws_lambda_events::apigw::ApiGatewayProxyRequest>,
 ) -> Result<aws_lambda_events::apigw::ApiGatewayProxyResponse, Error> {
     let event_bus_name = env::var("EVENT_BUS").expect("EVENT_BUS must be set");
     let config = aws_config::load_from_env().await;
     let client = aws_sdk_eventbridge::Client::new(&config);
+
+    println!("Event: {:?}", event);
 
     let id = uuid::Uuid::new_v4().to_string();
     let detail = json!({"id": id, "message": "api function says hello"}).to_string();

@@ -20,13 +20,14 @@ async fn handler(event: LambdaEvent<aws_lambda_events::sns::SnsEvent>) -> Result
         println!("SNS record: {:?}", record);
 
         let message = record.sns.message;
-        let id = record
-            .sns
-            .message_attributes
-            .get("id")
-            .unwrap()
-            .value
-            .clone();
+        let id = match record.sns.message_attributes.get("id") {
+            Some(id) => id.value.clone(),
+            None => {
+                println!("Id not present within the message attributes!");
+
+                return Ok(());
+            }
+        };
 
         let mut get_item_key: HashMap<String, aws_sdk_dynamodb::model::AttributeValue> =
             HashMap::new();
