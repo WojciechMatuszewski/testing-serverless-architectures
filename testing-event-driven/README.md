@@ -25,3 +25,16 @@
   - [This comment helped a lot](https://github.com/serverless/serverless/issues/3696#issuecomment-559310048).
 
   - It baffles me that this is a problem. How is this not fixed yet?
+
+- Unit testing the Rust AWS SDK client requires some boilerplate, but it mimics how one would test it using Go.
+
+  - I'm aware of three possible ways to unit test the SDK.
+
+    1. Use the [_trait objects_ approach](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/testing.html#testing-1).
+    2. Use the [_enums_ approach](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/testing.html#testing-2).
+    3. Use the [`TestConnection` approach](https://github.com/awslabs/aws-sdk-rust/issues/199#issuecomment-904558631).
+
+    I'm leaning towards approach number 1 since it is the same as in Go. Approach number 2 is interesting (it is fascinating how feature-rich Rust enums are). I'm not so sure about the approach 3. It does seem like we are using implementation details.
+
+  - The **worst part about unit testing** is that **you lose the ability** to use the `builder` pattern on the SDK calls**.
+    One could probably implement it back, but it appears to be a lot of work.
