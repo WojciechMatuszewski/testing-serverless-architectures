@@ -208,6 +208,5 @@ mod test {
 
         return Ok(());
 
-        // handler(fake, event)
     }
 }

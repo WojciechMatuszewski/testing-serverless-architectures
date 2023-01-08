@@ -34,7 +34,15 @@
     2. Use the [_enums_ approach](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/testing.html#testing-2).
     3. Use the [`TestConnection` approach](https://github.com/awslabs/aws-sdk-rust/issues/199#issuecomment-904558631).
 
-    I'm leaning towards approach number 1 since it is the same as in Go. Approach number 2 is interesting (it is fascinating how feature-rich Rust enums are). I'm not so sure about the approach 3. It does seem like we are using implementation details.
+    I'm leaning towards approach number 1 since it is the same as in Go. Approach number 2 is interesting (it is fascinating how feature-rich Rust enums are). I'm not so sure about approach 3. It does seem like we are using implementation details.
 
   - The **worst part about unit testing** is that **you lose the ability** to use the `builder` pattern on the SDK calls**.
     One could probably implement it back, but it appears to be a lot of work.
+
+- As I thought, the GraphQL ecosystem in Rust is not mature yet.
+
+  - **Since the implementation of the subscriptions is tied to Amplify/AppSync directives, it is impossible to write the subscription-based test in Rust**.
+
+    - One would have to push the subscriptions onto APIGW WebSockets or another third-party service.
+
+      - I'm not doing APIGW WebSockets again, as they are cumbersome.
